@@ -1,4 +1,4 @@
-"""基于NSGA-II的LCVR Stokes偏振计多目标优化论文 V4.8 — 核心期刊格式"""
+"""基于NSGA-II的LCVR Stokes偏振计多目标优化论文 V4.9 — 核心期刊格式"""
 from docx import Document
 from docx.shared import Pt, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -198,25 +198,10 @@ def gen(doc):
         '     + c₂₂·s₂₂·(1−cδ₂ⱼ)·c₂₁·sδ₁ᵢ − s₂₂·sδ₂ⱼ·cδ₁ᵢ',
         sz=Pt(10))
     body(doc,
-        'Stokes矢量由最小二乘法反演。令A⁺ = (AᵀA)⁻¹Aᵀ（即A的Moore-Penrose伪逆），则：')
-    # 用Word方程编辑器插入公式 S = A⁺I
-    from docx.oxml import parse_xml
-    from lxml import etree
-    math_xml = (
-        '<m:oMathPara xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math">'
-        '<m:oMath>'
-        '<m:r><m:t>S = A</m:t></m:r>'
-        '<m:sup><m:r><m:t>+</m:t></m:r></m:sup>'
-        '<m:r><m:t>I</m:t></m:r>'
-        '</m:oMath>'
-        '</m:oMathPara>'
-    )
-    p_eq = doc.add_paragraph()
-    p_eq.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p_eq.paragraph_format.line_spacing = 1.5
-    p_eq._element.append(parse_xml(math_xml))
+        'Stokes矢量由最小二乘法反演。定义Moore-Penrose伪逆矩阵A⁺ = (AᵀA)⁻¹Aᵀ，则Stokes矢量的最小二乘估计为：')
+    ctr(doc, 'S = A⁺I    （2）')
     body(doc,
-        '其中Stokes矢量S=[S₀,S₁,S₂,S₃]ᵀ，I为6维光强测量向量，A⁺为测量矩阵A的伪逆。')
+        '其中Stokes矢量S=[S₀,S₁,S₂,S₃]ᵀ，I为6维光强测量向量。式（2）与直接求解正规方程S = (AᵀA)⁻¹AᵀI等价，A⁺各行的2-范数即为后续计算EWV的基础。')
 
     h2(doc, '2.3  噪声传播指标')
     body(doc,
@@ -250,7 +235,9 @@ def gen(doc):
     h2(doc, '3.1  综合性能对比')
     body(doc,
         '将单目标GA基准、NSGA-II多目标优化、消融实验与文献数据汇总对比如表1所示。'
-        '其中Chang等[7]的数据提取自原文图表，本文单目标GA用于验证模型一致性。'
+        '其中Chang等[7]的数据提取自原文图表，本文单目标GA用于验证模型一致性。需注意，'
+        '由于文献[7]和[5]采用的波段范围、测量次数和优化目标与本文不完全相同，表1中文献'
+        '数据仅用于量级参考，而非严格同条件比较。'
         '温度范围−10~40°C来自LCVR典型工作环境规格[5,6]（民用/工业级LCVR通常标称'
         '−10~50°C）。')
     tbl(doc,
@@ -351,7 +338,10 @@ def gen(doc):
         'RMSE是否存在显著差异。结果表明：在−10°C极端温下，3目标解RMSE=0.01229，'
         '2目标解RMSE=0.01233，差异无统计学意义（p=0.66）；在25°C和40°C下，2目标解'
         'RMSE略优（p<0.001），差异幅度约3-4%。这说明3目标优化的代价是在室温下牺牲了'
-        '少量精度以换取温度稳定性。综合来看，ΔCN降幅达75.4%，而在相同噪声条件下'
+        '少量精度以换取温度稳定性。全温域平均RMSE中3目标解优于2目标解（0.01452 vs '
+        '0.01492），这是因为全温域指标受低温区域（−10~0°C）的CN恶化贡献更大——在低温区'
+        '2目标解的CN从2.094上升至2.417（Δ=0.323），而3目标解仅上升至2.248（Δ=0.086），'
+        '因此全温域均值反而改善。综合来看，ΔCN降幅达75.4%，而在相同噪声条件下'
         'RMSE改善幅度较小，这是因为原系统（2目标解）在室温附近已接近最优工作区，'
         '测量误差主要受随机噪声主导。但ΔCN的改善对于保证仪器在宽温域内稳定运行具有'
         '重要的工程意义。')
@@ -459,8 +449,8 @@ def main():
     doc.save(out)
     print(f'OK: {out}')
     import shutil
-    for dst in ['/mnt/c/Users/45064/Desktop/LCVR_Paper_V4.8.docx',
-                '/mnt/c/Users/45064/Desktop/论文/LCVR_Paper_V4.8.docx']:
+    for dst in ['/mnt/c/Users/45064/Desktop/LCVR_Paper_V4.9.docx',
+                '/mnt/c/Users/45064/Desktop/论文/LCVR_Paper_V4.9.docx']:
         try:
             shutil.copy2(out, dst)
             print(f'Copied: {dst}')
